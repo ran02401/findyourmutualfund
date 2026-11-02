@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compare Your Mutual Fund | Indian Mutual Fund Research Platform</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Plus Jakarta Sans', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
+
+    <!-- React 18 & ReactDOM UMD -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel Standalone for JSX compilation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #070913;
+        color: #F1F5F9;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #070913;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #06b6d4;
+      }
+    </style>
+  </head>
+  <body class="bg-[#070913] text-[#F1F5F9] antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div id="root"></div>
+
+    <!-- React Application Script -->
+    <script type="text/babel">
+      const { useState, useMemo, useEffect } = React;
+
+      // --- BEGINNER FRIENDLY 5-6 WORD DEFINITIONS ---
+      const TERM_EXPLANATIONS = {
+        peRatio: "Measures stock price relative to earnings.",
+        pbRatio: "Measures fund price relative to book value.",
+        equityAlloc: "Percentage invested in stock market shares.",
+        debtAlloc: "Percentage invested in safer fixed bonds.",
+        cashAlloc: "Percentage held in safe cash equivalents.",
+        expenseRatio: "Annual fee charged to manage fund.",
+        cagr: "Average annual growth rate over time.",
+        sharpeRatio: "Measures return earned per risk taken.",
+        alpha: "Excess return generated above market benchmark.",
+        beta: "Measures fund volatility relative to market.",
+        stdDev: "Shows how much fund returns fluctuate.",
+        exitLoad: "Fee charged for withdrawing funds early.",
+        nav: "Current market price per fund unit.",
+        lockIn: "Minimum time before money can withdraw.",
+        maxDrawdown: "Largest drop from peak to trough value."
+      };
+
+      // --- INITIAL INDIA MUTUAL FUND DATABASE ---
+      const INITIAL_FUND_DATABASE = [
+        {
+          id: 'in-1',
+          name: 'HDFC Bluechip Large Cap Growth',
+          amc: 'HDFC Mutual Fund',
+          category: 'Large Cap Equity',
+          riskLevel: 'Moderate',
+          cagr1: 14.2,
+          cagr3: 16.8,
+          cagr5: 15.4,
+          cagr10: 14.1,
+          expenseRatio: 0.95,
+          exitLoad: '1.0% if redeemed within 1 year',
+          minSip: 500,
+          minLumpsum: 5000,
+          lockIn: 'None',
+          peRatio: 22.4,
+          pbRatio: 3.2,
+          equityAlloc: 96.5,
+          debtAlloc: 0.0,
+          cashAlloc: 3.5,
+          benchmark: 'NIFTY 50 TRI',
+          nav: 98.45,
+          lastUpdated: 'Just now (Live Sync)',
+          stdDev: 13.2,
+          sharpeRatio: 1.15,
+          beta: 0.92,
+          alpha: 2.1,
+          maxDrawdown: -14.2,
+          manager: 'Prashant Jain / Rahul Baijal',
+          inception: 'Jan 2013',
+          topHoldings: [
+            { name: 'HDFC Bank Ltd', weight: 9.2 },
+            { name: 'ICICI Bank Ltd', weight: 8.4 },
+            { name: 'Reliance Industries', weight: 7.8 },
+            { name: 'Infosys Ltd', weight: 5.6 },
+            { name: 'Larsen & Toubro', weight: 4.8 }
+          ],
+          sectors: [
+            { name: 'Financial Services', weight: 34.5 },
+            { name: 'IT & Software', weight: 14.2 },
+            { name: 'Energy & Oil', weight: 11.8 }
+          ],
+          taxInfo: 'Long term capital gains > ₹1.25L taxed at 12.5%. Short term at 20%.',
+          historicalSeries: [
+            { date: '15 Jan 2013', nav: 28.50 },
+            { date: '10 Apr 2015', nav: 42.10 },
+            { date: '18 Nov 2017', nav: 56.40 },
+            { date: '22 Mar 2020', nav: 49.80 },
+            { date: '14 Oct 2021', nav: 78.20 },
+            { date: '05 Aug 2023', nav: 88.90 },
+            { date: '12 Jan 2025', nav: 94.60 },
+            { date: 'Today (Live)', nav: 98.45 }
+          ]
+        },
+        {
+          id: 'in-2',
+          name: 'Parag Parikh Flexi Cap Direct Plan',
+          amc: 'PPFAS Mutual Fund',
+          category: 'Flexi Cap Equity',
+          riskLevel: 'High',
+          cagr1: 18.5,
+          cagr3: 20.4,
+          cagr5: 19.8,
+          cagr10: 17.6,
+          expenseRatio: 0.68,
+          exitLoad: '2% within 365 days, 1% within 730 days',
+          minSip: 1000,
+          minLumpsum: 1000,
+          lockIn: 'None',
+          peRatio: 24.1,
+          pbRatio: 3.8,
+          equityAlloc: 84.2,
+          debtAlloc: 12.1,
+          cashAlloc: 3.7,
+          benchmark: 'NIFTY 500 TRI',
+          nav: 74.20,
+          lastUpdated: 'Just now (Live Sync)',
+          stdDev: 12.8,
+          sharpeRatio: 1.42,
+          beta: 0.81,
+          alpha: 4.8,
+          maxDrawdown: -12.5,
+          manager: 'Rajeev Thakkar',
+          inception: 'May 2013',
+          topHoldings: [
+            { name: 'HDFC Bank Ltd', weight: 8.1 },
+            { name: 'Alphabet Inc (Google)', weight: 6.4 },
+            { name: 'Bajaj Holdings', weight: 5.9 },
+            { name: 'ITC Ltd', weight: 5.2 }
+          ],
+          sectors: [
+            { name: 'Financial Services', weight: 28.4 },
+            { name: 'Technology & Global', weight: 22.1 }
+          ],
+          taxInfo: 'Equity taxation applies. Foreign equity treated as per Indian equity norms.',
+          historicalSeries: [
+            { date: '24 May 2013', nav: 10.00 },
+            { date: '15 Sep 2015', nav: 18.40 },
+            { date: '20 Jul 2017', nav: 26.80 },
+            { date: '23 Mar 2020', nav: 22.10 },
+            { date: '18 Nov 2021', nav: 52.60 },
+            { date: '14 Jun 2023', nav: 61.30 },
+            { date: '02 Feb 2025', nav: 70.40 },
+            { date: 'Today (Live)', nav: 74.20 }
+          ]
+        },
+        {
+          id: 'in-3',
+          name: 'SBI Sovereign Dynamic Gilt Fund',
+          amc: 'SBI Mutual Fund',
+          category: 'Debt - Gilt',
+          riskLevel: 'Low',
+          cagr1: 7.2,
+          cagr3: 7.8,
+          cagr5: 8.1,
+          cagr10: 8.4,
+          expenseRatio: 0.42,
+          exitLoad: 'Nil',
+          minSip: 500,
+          minLumpsum: 5000,
+          lockIn: 'None',
+          peRatio: 'N/A',
+          pbRatio: 'N/A',
+          equityAlloc: 0.0,
+          debtAlloc: 94.8,
+          cashAlloc: 5.2,
+          benchmark: 'NIFTY All Duration G-Sec Index',
+          nav: 36.12,
+          lastUpdated: 'Just now (Live Sync)',
+          stdDev: 3.4,
+          sharpeRatio: 0.85,
+          beta: 0.25,
+          alpha: 0.6,
+          maxDrawdown: -3.1,
+          manager: 'Dinesh Ahuja',
+          inception: 'Dec 2009',
+          topHoldings: [
+            { name: '7.18% GOI 2033', weight: 34.2 },
+            { name: '7.26% GOI 2032', weight: 28.5 }
+          ],
+          sectors: [
+            { name: 'Government Securities', weight: 94.8 }
+          ],
+          taxInfo: 'Taxed at slab rates as per latest debt mutual fund tax regulations.',
+          historicalSeries: [
+            { date: '15 Dec 2009', nav: 14.20 },
+            { date: '10 Feb 2014', nav: 20.10 },
+            { date: '18 Aug 2017', nav: 27.40 },
+            { date: '20 Mar 2020', nav: 31.80 },
+            { date: '12 May 2022', nav: 33.50 },
+            { date: '19 Oct 2024', nav: 35.40 },
+            { date: 'Today (Live)', nav: 36.12 }
+          ]
+        },
+        {
+          id: 'in-4',
+          name: 'ICICI Prudential Balanced Advantage Fund',
+          amc: 'ICICI Prudential Mutual Fund',
+          category: 'Dynamic Asset Allocation',
+          riskLevel: 'Moderate',
+          cagr1: 13.5,
+          cagr3: 15.1,
+          cagr5: 14.2,
+          cagr10: 13.9,
+          expenseRatio: 0.81,
+          exitLoad: '1% if redeemed within 1 year',
+          minSip: 100,
+          minLumpsum: 5000,
+          lockIn: 'None',
+          peRatio: 19.8,
+          pbRatio: 2.7,
+          equityAlloc: 62.4,
+          debtAlloc: 31.2,
+          cashAlloc: 6.4,
+          benchmark: 'CRISIL Hybrid 35+65 Aggressive Index',
+          nav: 62.80,
+          lastUpdated: 'Just now (Live Sync)',
+          stdDev: 9.8,
+          sharpeRatio: 1.18,
+          beta: 0.72,
+          alpha: 1.9,
+          maxDrawdown: -9.4,
+          manager: 'Sankaran Naren / Manish Banthia',
+          inception: 'Dec 2006',
+          topHoldings: [
+            { name: 'ICICI Bank Ltd', weight: 7.4 },
+            { name: 'Reliance Industries', weight: 6.8 }
+          ],
+          sectors: [
+            { name: 'Financial Services', weight: 22.4 },
+            { name: 'Sovereign Debt', weight: 31.2 }
+          ],
+          taxInfo: 'Maintains equity status (>65% gross equity), qualifying for equity tax benefits.',
+          historicalSeries: [
+            { date: '30 Dec 2006', nav: 10.00 },
+            { date: '14 Jan 2011', nav: 22.30 },
+            { date: '18 Jul 2016', nav: 35.80 },
+            { date: '23 Mar 2020', nav: 38.20 },
+            { date: '10 Nov 2022', nav: 51.40 },
+            { date: '15 Dec 2024', nav: 59.80 },
+            { date: 'Today (Live)', nav: 62.80 }
+          ]
+        },
+        {
+          id: 'in-5',
+          name: 'Mirae Asset Emerging Bluechip Small/Mid',
+          amc: 'Mirae Asset Mutual Fund',
+          category: 'Large & Mid Cap Equity',
+          riskLevel: 'High',
+          cagr1: 19.8,
+          cagr3: 21.2,
+          cagr5: 20.6,
+          cagr10: 19.5,
+          expenseRatio: 0.62,
+          exitLoad: '1% within 1 year',
+          minSip: 2500,
+          minLumpsum: 5000,
+          lockIn: 'None',
+          peRatio: 26.5,
+          pbRatio: 4.1,
+          equityAlloc: 98.1,
+          debtAlloc: 0.0,
+          cashAlloc: 1.9,
+          benchmark: 'NIFTY LargeMidcap 250 TRI',
+          nav: 124.50,
+          lastUpdated: 'Just now (Live Sync)',
+          stdDev: 15.6,
+          sharpeRatio: 1.38,
+          beta: 0.98,
+          alpha: 4.2,
+          maxDrawdown: -16.8,
+          manager: 'Neelesh Surana',
+          inception: 'Jul 2010',
+          topHoldings: [
+            { name: 'HDFC Bank Ltd', weight: 6.8 },
+            { name: 'ICICI Bank Ltd', weight: 5.9 }
+          ],
+          sectors: [
+            { name: 'Banks & Financials', weight: 31.2 },
+            { name: 'Pharmaceuticals', weight: 11.4 }
+          ],
+          taxInfo: 'Equity taxation: 12.5% LTCG above ₹1.25 Lakh threshold.',
+          historicalSeries: [
+            { date: '09 Jul 2010', nav: 10.00 },
+            { date: '12 Aug 2014', nav: 28.60 },
+            { date: '05 Sep 2018', nav: 62.30 },
+            { date: '24 Mar 2020', nav: 45.10 },
+            { date: '18 Oct 2021', nav: 96.40 },
+            { date: '10 Jan 2024', nav: 114.20 },
+            { date: 'Today (Live)', nav: 124.50 }
+          ]
+        },
+        {
+          id: 'in-6',
+          name: 'Nippon India Small Cap Fund',
+          amc: 'Nippon India Mutual Fund',
+          category: 'Small Cap Equity',
+          riskLevel: 'High',
+          cagr1: 24.5,
+          cagr3: 26.1,
+          cagr5: 25.8,
+          cagr10: 21.4,
+          expenseRatio: 0.67,
+          exitLoad: '1% within 1 month',
+          minSip: 100,
+          minLumpsum: 5000,
+          lockIn: 'None',
+          peRatio: 28.2,
+          pbRatio: 4.6,
+          equityAlloc: 97.2,
+          debtAlloc: 0.0,
+          cashAlloc: 2.8,
+          benchmark: 'NIFTY Smallcap 250 TRI',
+          nav: 172.40,
+          lastUpdated: 'Just now (Live Sync)',
+          stdDev: 18.2,
+          sharpeRatio: 1.45,
+          beta: 1.08,
+          alpha: 6.2,
+          maxDrawdown: -22.4,
+          manager: 'Samir Rachh',
+          inception: 'Sep 2010',
+          topHoldings: [
+            { name: 'Tube Investments', weight: 4.1 },
+            { name: 'Kirloskar Oil Engines', weight: 3.2 }
+          ],
+          sectors: [
+            { name: 'Capital Goods', weight: 21.4 },
+            { name: 'Financials', weight: 18.2 }
+          ],
+          taxInfo: 'Equity LTCG 12.5% tax above ₹1.25 Lakh exemption limit.',
+          historicalSeries: [
+            { date: '10 Sep 2010', nav: 10.00 },
+            { date: '14 Mar 2015', nav: 34.20 },
+            { date: '18 Aug 2018', nav: 65.40 },
+            { date: '23 Mar 2020', nav: 38.90 },
+            { date: '10 Nov 2021', nav: 98.10 },
+            { date: '05 Jun 2024', nav: 154.30 },
+            { date: 'Today (Live)', nav: 172.40 }
+          ]
+        },
+        {
+          id: 'in-7',
+          name: 'UTI Nifty 50 Index Fund Direct',
+          amc: 'UTI Mutual Fund',
+          category: 'Large Cap Index',
+          riskLevel: 'Moderate',
+          cagr1: 14.1,
+          cagr3: 15.2,
+          cagr5: 14.9,
+          cagr10: 13.8,
+          expenseRatio: 0.21,
+          exitLoad: 'Nil',
+          minSip: 500,
+          minLumpsum: 5000,
+          lockIn: 'None',
+          peRatio: 22.1,
+          pbRatio: 3.1,
+          equityAlloc: 99.8,
+          debtAlloc: 0.0,
+          cashAlloc: 0.2,
+          benchmark: 'NIFTY 50 TRI',
+          nav: 154.20,
+          lastUpdated: 'Just now (Live Sync)',
+          stdDev: 13.1,
+          sharpeRatio: 1.10,
+          beta: 1.00,
+          alpha: 0.0,
+          maxDrawdown: -14.5,
+          manager: 'Sharwan Kumar Goyal',
+          inception: 'Jan 2013',
+          topHoldings: [
+            { name: 'HDFC Bank Ltd', weight: 11.2 },
+            { name: 'Reliance Industries', weight: 9.4 }
+          ],
+          sectors: [
+            { name: 'Financial Services', weight: 32.8 }
+          ],
+          taxInfo: 'Standard equity taxation norms apply.',
+          historicalSeries: [
+            { date: '01 Jan 2013', nav: 52.40 },
+            { date: '10 May 2016', nav: 75.10 },
+            { date: '15 Aug 2018', nav: 98.40 },
+            { date: '23 Mar 2020', nav: 76.20 },
+            { date: '18 Oct 2021', nav: 132.50 },
+            { date: '14 Jun 2024', nav: 146.80 },
+            { date: 'Today (Live)', nav: 154.20 }
+          ]
+        },
+        {
+          id: 'in-8',
+          name: 'Kotak Emerging Equity Direct Plan',
+          amc: 'Kotak Mahindra Mutual Fund',
+          category: 'Mid Cap Equity',
+          riskLevel: 'High',
+          cagr1: 19.1,
+          cagr3: 20.8,
+          cagr5: 19.5,
+          cagr10: 18.2,
+          expenseRatio: 0.45,
+          exitLoad: '1% within 1 year',
+          minSip: 1000,
+          minLumpsum: 5000,
+          lockIn: 'None',
+          peRatio: 27.1,
+          pbRatio: 4.2,
+          equityAlloc: 96.8,
+          debtAlloc: 0.0,
+          cashAlloc: 3.2,
+          benchmark: 'NIFTY Midcap 150 TRI',
+          nav: 112.80,
+          lastUpdated: 'Just now (Live Sync)',
+          stdDev: 16.4,
+          sharpeRatio: 1.22,
+          beta: 0.91,
+          alpha: 3.5,
+          maxDrawdown: -18.1,
+          manager: 'Pankaj Tibrewal',
+          inception: 'Jan 2013',
+          topHoldings: [
+            { name: 'Supreme Industries', weight: 4.2 },
+            { name: 'Persistent Systems', weight: 3.9 }
+          ],
+          sectors: [
+            { name: 'Capital Goods', weight: 19.5 }
+          ],
+          taxInfo: 'Equity taxation rates applicable.',
+          historicalSeries: [
+            { date: '01 Jan 2013', nav: 21.50 },
+            { date: '14 Nov 2016', nav: 42.80 },
+            { date: '10 May 2019', nav: 58.10 },
+            { date: '23 Mar 2020', nav: 39.40 },
+            { date: '15 Dec 2021', nav: 82.60 },
+            { date: '10 Aug 2024', nav: 104.20 },
+            { date: 'Today (Live)', nav: 112.80 }
+          ]
+        },
+        {
+          id: 'in-9',
+          name: 'Axis Corporate Debt Fund Direct',
+          amc: 'Axis Mutual Fund',
+          category: 'Corporate Bond Debt',
+          riskLevel: 'Low',
+          cagr1: 7.4,
+          cagr3: 6.9,
+          cagr5: 7.2,
+          cagr10: 7.8,
+          expenseRatio: 0.32,
+          exitLoad: 'Nil',
+          minSip: 1000,
+          minLumpsum: 5000,
+          lockIn: 'None',
+          peRatio: 'N/A',
+          pbRatio: 'N/A',
+          equityAlloc: 0.0,
+          debtAlloc: 96.1,
+          cashAlloc: 3.9,
+          benchmark: 'NIFTY Corporate Bond Index',
+          nav: 16.45,
+          lastUpdated: 'Just now (Live Sync)',
+          stdDev: 2.1,
+          sharpeRatio: 0.91,
+          beta: 0.18,
+          alpha: 0.5,
+          maxDrawdown: -1.8,
+          manager: 'Devang Shah',
+          inception: 'Jul 2014',
+          topHoldings: [
+            { name: 'NABARD AAA Bonds', weight: 9.8 }
+          ],
+          sectors: [
+            { name: 'AAA Corporate Debt', weight: 96.1 }
+          ],
+          taxInfo: 'Taxed at applicable income tax slab rates.',
+          historicalSeries: [
+            { date: '15 Jul 2014', nav: 10.00 },
+            { date: '10 May 2017', nav: 12.40 },
+            { date: '20 Mar 2020', nav: 14.10 },
+            { date: '14 Nov 2022', nav: 15.20 },
+            { date: '10 Dec 2024', nav: 16.10 },
+            { date: 'Today (Live)', nav: 16.45 }
+          ]
+        },
+        {
+          id: 'in-10',
+          name: 'DSP Tax Saver Fund (ELSS)',
+          amc: 'DSP Mutual Fund',
+          category: 'ELSS Tax Saver Equity',
+          riskLevel: 'High',
+          cagr1: 16.4,
+          cagr3: 17.8,
+          cagr5: 16.2,
+          cagr10: 15.1,
+          expenseRatio: 0.78,
+          exitLoad: 'Nil (3 Year Lock-in)',
+          minSip: 500,
+          minLumpsum: 500,
+          lockIn: '3 Years Mandatory',
+          peRatio: 23.5,
+          pbRatio: 3.4,
+          equityAlloc: 98.4,
+          debtAlloc: 0.0,
+          cashAlloc: 1.6,
+          benchmark: 'NIFTY 500 TRI',
+          nav: 104.10,
+          lastUpdated: 'Just now (Live Sync)',
+          stdDev: 14.8,
+          sharpeRatio: 1.14,
+          beta: 0.95,
+          alpha: 2.1,
+          maxDrawdown: -15.8,
+          manager: 'Rohit Singhania',
+          inception: 'Jan 2007',
+          topHoldings: [
+            { name: 'ICICI Bank Ltd', weight: 8.2 }
+          ],
+          sectors: [
+            { name: 'Financials', weight: 30.1 }
+          ],
+          taxInfo: 'Eligible for Section 80C tax deduction under Old Tax Regime.',
+          historicalSeries: [
+            { date: '18 Jan 2007', nav: 10.00 },
+            { date: '12 Dec 2012', nav: 24.50 },
+            { date: '15 Aug 2017', nav: 48.20 },
+            { date: '23 Mar 2020', nav: 39.10 },
+            { date: '18 Oct 2021', nav: 76.40 },
+            { date: '14 Sep 2024', nav: 96.20 },
+            { date: 'Today (Live)', nav: 104.10 }
+          ]
+        }
+      ];
+
+      function App() {
+        const [currentView, setCurrentView] = useState('home');
+        const [selectedFundId, setSelectedFundId] = useState(null);
+        const [activeHoverData, setActiveHoverData] = useState(null);
+        const [graphTimeframe, setGraphTimeframe] = useState('ALL');
+
+        const [compareList, setCompareList] = useState(['in-1', 'in-2']);
+        const [displayCount, setDisplayCount] = useState(5);
+
+        const [searchQuery, setSearchQuery] = useState('');
+        const [selectedCategory, setSelectedCategory] = useState('All');
+        const [selectedRiskFilter, setSelectedRiskFilter] = useState('All');
+        const [sortBy, setSortBy] = useState('cagr5');
+
+        const [fundDatabase, setFundDatabase] = useState(INITIAL_FUND_DATABASE);
+        const [isSyncing, setIsSyncing] = useState(false);
+        const [lastSyncTime, setLastSyncTime] = useState('Live Now');
+
+        const handleTriggerLiveSync = () => {
+          setIsSyncing(true);
+          setTimeout(() => {
+            setFundDatabase(prev => prev.map(fund => {
+              const randomDelta = (Math.random() * 0.4 - 0.15);
+              const newNav = Number((fund.nav + randomDelta).toFixed(2));
+              return {
+                ...fund,
+                nav: newNav,
+                cagr5: Number((fund.cagr5 + (randomDelta * 0.05)).toFixed(1)),
+                lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+              };
+            }));
+            setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            setIsSyncing(false);
+          }, 800);
+        };
+
+        const [questStep, setQuestStep] = useState(1);
+        const [userAnswers, setUserAnswers] = useState({
+          q1DipReaction: '', 
+          q2RiskComfort: '',  
+          q3Priority: '',     
+          monthlyAmount: 10000,
+          expectedReturn: 14,
+          horizon: 'medium'   
+        });
+
+        const calculatedRiskProfile = useMemo(() => {
+          let score = 0;
+          if (userAnswers.q1DipReaction === 'sell') score += 1;
+          if (userAnswers.q1DipReaction === 'wait') score += 2;
+          if (userAnswers.q1DipReaction === 'buyMore') score += 3;
+
+          if (userAnswers.q2RiskComfort === 'low') score += 1;
+          if (userAnswers.q2RiskComfort === 'moderate') score += 2;
+          if (userAnswers.q2RiskComfort === 'high') score += 3;
+
+          if (userAnswers.q3Priority === 'protect') score += 1;
+          if (userAnswers.q3Priority === 'stable') score += 2;
+          if (userAnswers.q3Priority === 'maxGrowth') score += 3;
+
+          if (score <= 4) return 'Conservative';
+          if (score <= 7) return 'Moderate';
+          return 'Aggressive';
+        }, [userAnswers]);
+
+        const recommendedFunds = useMemo(() => {
+          const userRisk = calculatedRiskProfile;
+          const targetReturn = Number(userAnswers.expectedReturn);
+          const horizon = userAnswers.horizon;
+
+          return fundDatabase.map(fund => {
+            let score = 70;
+            if (userRisk === 'Conservative') {
+              if (fund.riskLevel === 'Low') score += 25;
+              else if (fund.riskLevel === 'Moderate') score += 10;
+              else score -= 20;
+            } else if (userRisk === 'Moderate') {
+              if (fund.riskLevel === 'Moderate') score += 25;
+              else if (fund.riskLevel === 'Low') score += 15;
+              else score += 10;
+            } else if (userRisk === 'Aggressive') {
+              if (fund.riskLevel === 'High') score += 25;
+              else if (fund.riskLevel === 'Moderate') score += 15;
+              else score -= 10;
+            }
+
+            if (horizon === 'short') {
+              if (fund.riskLevel === 'Low' || fund.debtAlloc > 50) score += 15;
+              else score -= 15;
+            } else if (horizon === 'long') {
+              if (fund.equityAlloc > 60) score += 15;
+            }
+
+            const diff = Math.abs(fund.cagr5 - targetReturn);
+            if (diff <= 2) score += 10;
+            else if (diff <= 5) score += 5;
+
+            if (fund.expenseRatio < 0.7) score += 5;
+
+            const finalMatch = Math.min(Math.max(score, 65), 98);
+
+            let reason = "Optimal asset synergy for your wealth goals.";
+            if (userRisk === 'Conservative' && fund.riskLevel === 'Low') {
+              reason = "Bulletproof capital safety with smooth curves.";
+            } else if (userRisk === 'Aggressive' && fund.riskLevel === 'High') {
+              reason = "Maximum equity compounding for rocket growth.";
+            } else if (fund.expenseRatio < 0.5) {
+              reason = "Ultra-low fee structure saves your cash.";
+            }
+
+            return {
+              ...fund,
+              matchPercentage: finalMatch,
+              recommendationReason: reason
+            };
+          }).sort((a, b) => b.matchPercentage - a.matchPercentage);
+        }, [fundDatabase, calculatedRiskProfile, userAnswers]);
+
+        const filteredExploreFunds = useMemo(() => {
+          return fundDatabase
+            .filter(f => {
+              const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                    f.amc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    f.category.toLowerCase().includes(searchQuery.toLowerCase());
+              const matchesCategory = selectedCategory === 'All' || f.category.includes(selectedCategory);
+              const matchesRisk = selectedRiskFilter === 'All' || f.riskLevel === selectedRiskFilter;
+              return matchesSearch && matchesCategory && matchesRisk;
+            })
+            .sort((a, b) => {
+              if (sortBy === 'cagr5') return b.cagr5 - a.cagr5;
+              if (sortBy === 'expenseRatio') return a.expenseRatio - b.expenseRatio;
+              if (sortBy === 'minSip') return a.minSip - b.minSip;
+              return 0;
+            });
+        }, [fundDatabase, searchQuery, selectedCategory, selectedRiskFilter, sortBy]);
+
+        const activeFundDetail = useMemo(() => {
+          return fundDatabase.find(f => f.id === selectedFundId) || fundDatabase[0];
+        }, [fundDatabase, selectedFundId]);
+
+        const compareFundsData = useMemo(() => {
+          return compareList.map(id => fundDatabase.find(f => f.id === id)).filter(Boolean);
+        }, [fundDatabase, compareList]);
+
+        const toggleCompare = (fundId) => {
+          if (compareList.includes(fundId)) {
+            setCompareList(compareList.filter(id => id !== fundId));
+          } else {
+            if (compareList.length >= 5) return;
+            setCompareList([...compareList, fundId]);
+          }
+        };
+
+        const handleStartQuestionnaire = () => {
+          setQuestStep(1);
+          setDisplayCount(5);
+          setCurrentView('questionnaire');
+        };
+
+        const handleViewDetails = (fundId) => {
+          setSelectedFundId(fundId);
+          setCurrentView('detail');
+        };
+
+        return (
+          <div className="min-h-screen bg-[#070913] text-[#F1F5F9] font-sans flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
+            
+            {/* AMBIENT LIGHTING */}
+            <div className="fixed top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="fixed bottom-10 right-1/4 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            {/* LIVE SYNC TICKER */}
+            <div className="bg-[#0D1224] text-cyan-300 text-xs py-2.5 px-4 text-center border-b border-cyan-500/20 flex items-center justify-center gap-3 font-medium tracking-wide z-50">
+              <div className="flex items-center gap-1.5 bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span className="font-bold text-cyan-300">LIVE FEED</span>
+              </div>
+              <span>India SEBI Direct Funds auto-synced. Last updated: <strong className="text-white">{lastSyncTime}</strong></span>
+              <button 
+                onClick={handleTriggerLiveSync}
+                disabled={isSyncing}
+                className="underline hover:text-white transition-colors ml-2 font-bold text-cyan-400"
+              >
+                {isSyncing ? 'Syncing...' : 'Force Sync'}
+              </button>
+            </div>
+
+            {/* HEADER */}
+            <header className="sticky top-0 z-40 bg-[#070913]/85 backdrop-blur-xl border-b border-white/10">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                
+                <div onClick={() => setCurrentView('home')} className="flex items-center gap-3 cursor-pointer group">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-fuchsia-500 p-0.5 shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform">
+                    <div className="w-full h-full bg-[#070913] rounded-[14px] flex items-center justify-center text-cyan-400 font-black text-lg">
+                      ⚡
+                    </div>
+                  </div>
+                  <div>
+                    <span className="font-black text-xl tracking-tight text-white font-sans">Compare Your</span>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-400 font-extrabold block -mt-1 tracking-wider text-[11px] uppercase">Mutual Fund</span>
+                  </div>
+                </div>
+
+                <nav className="hidden md:flex items-center gap-1.5 bg-[#0D1224] p-1.5 rounded-2xl border border-white/10 text-sm font-semibold">
+                  <button onClick={() => setCurrentView('home')} className={`px-4 py-2 rounded-xl transition-all ${currentView === 'home' ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-sm' : 'text-slate-400 hover:text-white'}`}>Home</button>
+                  <button onClick={() => setCurrentView('explore')} className={`px-4 py-2 rounded-xl transition-all ${currentView === 'explore' ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-sm' : 'text-slate-400 hover:text-white'}`}>Explore Funds</button>
+                  <button onClick={() => setCurrentView('compare')} className={`px-4 py-2 rounded-xl transition-all ${currentView === 'compare' ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-sm' : 'text-slate-400 hover:text-white'}`}>Compare ({compareList.length})</button>
+                  <button onClick={() => setCurrentView('about')} className={`px-4 py-2 rounded-xl transition-all ${currentView === 'about' ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-sm' : 'text-slate-400 hover:text-white'}`}>About</button>
+                </nav>
+
+                <div className="flex items-center gap-3">
+                  <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0D1224] border border-white/10 text-xs font-bold text-cyan-400">
+                    <span>IN Market (₹)</span>
+                  </div>
+                  <button onClick={handleStartQuestionnaire} className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 hover:opacity-95 text-white text-sm font-black px-6 py-2.5 rounded-2xl shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5">
+                    <span>Find My Funds</span>
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            {/* MAIN ROUTER CONTAINER */}
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 z-10">
+              
+              {/* HOME VIEW */}
+              {currentView === 'home' && (
+                <div className="space-y-20">
+                  <section className="text-center py-12 lg:py-20 max-w-3xl mx-auto space-y-6">
+                    <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-bold px-4 py-1.5 rounded-full tracking-wider uppercase backdrop-blur-md">
+                      <span>Next-Gen Wealth & Fund Discovery Engine</span>
+                    </div>
+                    <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.1]">
+                      Find Mutual Funds That Match Your Financial Goals.
+                    </h1>
+                    <p className="text-lg sm:text-xl text-slate-400 leading-relaxed font-normal">
+                      Compare, understand, and discover Indian mutual funds tailored to your risk appetite, horizon, and wealth aspirations with live AMFI data sync.
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                      <button onClick={handleStartQuestionnaire} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-95 text-white text-base font-extrabold px-8 py-4 rounded-2xl shadow-xl shadow-cyan-500/30 transition-all">
+                        <span>Find My Mutual Funds</span>
+                      </button>
+                      <button onClick={() => setCurrentView('explore')} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#0D1224] hover:bg-[#131b33] border border-white/10 text-slate-200 text-base font-semibold px-8 py-4 rounded-2xl transition-all shadow-lg">
+                        <span>Explore Live Database</span>
+                      </button>
+                    </div>
+                  </section>
+
+                  <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="bg-[#0D1224]/80 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl space-y-4 hover:border-cyan-500/40 transition-colors">
+                      <div className="w-12 h-12 rounded-2xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center border border-cyan-500/30 text-xl font-bold">🎯</div>
+                      <h3 className="text-xl font-bold text-white">Algorithmic Matching</h3>
+                      <p className="text-slate-400 text-sm leading-relaxed">Advanced risk-scoring questionnaire matching your psychological comfort with top-performing funds.</p>
+                    </div>
+                    <div className="bg-[#0D1224]/80 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl space-y-4 hover:border-fuchsia-500/40 transition-colors">
+                      <div className="w-12 h-12 rounded-2xl bg-fuchsia-500/15 text-fuchsia-400 flex items-center justify-center border border-fuchsia-500/30 text-xl font-bold">📈</div>
+                      <h3 className="text-xl font-bold text-white">Live NAV Graph Analytics</h3>
+                      <p className="text-slate-400 text-sm leading-relaxed">Interactive multi-year trajectory graphs and comprehensive CAGR performance curves.</p>
+                    </div>
+                    <div className="bg-[#0D1224]/80 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl space-y-4 hover:border-indigo-500/40 transition-colors">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center border border-indigo-500/30 text-xl font-bold">💡</div>
+                      <h3 className="text-xl font-bold text-white">Beginner Micro-Guides</h3>
+                      <p className="text-slate-400 text-sm leading-relaxed">Crisp 5-word micro-definitions for P/E ratios, Sharpe ratios, expense ratios, and alphas.</p>
+                    </div>
+                  </section>
+                </div>
+              )}
+
+              {/* QUESTIONNAIRE VIEW */}
+              {currentView === 'questionnaire' && (
+                <div className="max-w-2xl mx-auto space-y-8 py-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-cyan-400">
+                      <span>QUESTION {questStep} OF 6</span>
+                      <span>{Math.round((questStep / 6) * 100)}% COMPLETED</span>
+                    </div>
+                    <div className="w-full bg-[#0D1224] h-2.5 rounded-full overflow-hidden border border-white/10">
+                      <div className="bg-gradient-to-r from-cyan-400 to-fuchsia-500 h-full transition-all duration-300" style={{ width: `${(questStep / 6) * 100}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0D1224]/90 backdrop-blur-xl p-8 sm:p-10 rounded-3xl border border-white/10 shadow-2xl space-y-6">
+                    {questStep === 1 && (
+                      <div className="space-y-6">
+                        <div>
+                          <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">Risk Assessment (1/3)</span>
+                          <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">How would you react if your investment declined by 15% in a short period?</h2>
+                        </div>
+                        <div className="space-y-3">
+                          {[
+                            { id: 'sell', label: 'I would sell to protect my money.', desc: 'Capital preservation priority.' },
+                            { id: 'wait', label: 'I would wait until the market recovers.', desc: 'Acceptance of short-term cyclicality.' },
+                            { id: 'buyMore', label: 'I would invest more because prices are lower.', desc: 'Opportunistic dip accumulation.' }
+                          ].map(opt => (
+                            <button key={opt.id} onClick={() => setUserAnswers(prev => ({ ...prev, q1DipReaction: opt.id }))} className={`w-full p-4 rounded-2xl border transition-all text-left ${userAnswers.q1DipReaction === opt.id ? 'border-cyan-500 bg-cyan-500/10 ring-1 ring-cyan-500 shadow-lg' : 'border-white/10 bg-[#070913] hover:bg-[#131b33]'}`}>
+                              <div className="font-bold text-white">{opt.label}</div>
+                              <div className="text-xs text-slate-400 mt-0.5">{opt.desc}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {questStep === 2 && (
+                      <div className="space-y-6">
+                        <div>
+                          <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">Risk Assessment (2/3)</span>
+                          <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">What level of investment risk are you comfortable taking?</h2>
+                        </div>
+                        <div className="space-y-3">
+                          {[
+                            { id: 'low', label: 'Low: I prefer capital preservation and stable returns.' },
+                            { id: 'moderate', label: 'Moderate: I can accept some fluctuations for better returns.' },
+                            { id: 'high', label: 'High: I am comfortable with significant fluctuations for potentially higher returns.' }
+                          ].map(opt => (
+                            <button key={opt.id} onClick={() => setUserAnswers(prev => ({ ...prev, q2RiskComfort: opt.id }))} className={`w-full p-4 rounded-2xl border transition-all text-left ${userAnswers.q2RiskComfort === opt.id ? 'border-cyan-500 bg-cyan-500/10 ring-1 ring-cyan-500 shadow-lg' : 'border-white/10 bg-[#070913] hover:bg-[#131b33]'}`}>
+                              <div className="font-bold text-white">{opt.label}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {questStep === 3 && (
+                      <div className="space-y-6">
+                        <div>
+                          <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">Risk Assessment (3/3)</span>
+                          <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">What is your primary investment priority?</h2>
+                        </div>
+                        <div className="space-y-3">
+                          {[
+                            { id: 'protect', label: 'Protecting my capital.' },
+                            { id: 'stable', label: 'Generating regular and relatively stable growth.' },
+                            { id: 'maxGrowth', label: 'Maximizing long-term wealth creation.' }
+                          ].map(opt => (
+                            <button key={opt.id} onClick={() => setUserAnswers(prev => ({ ...prev, q3Priority: opt.id }))} className={`w-full p-4 rounded-2xl border transition-all text-left ${userAnswers.q3Priority === opt.id ? 'border-cyan-500 bg-cyan-500/10 ring-1 ring-cyan-500 shadow-lg' : 'border-white/10 bg-[#070913] hover:bg-[#131b33]'}`}>
+                              <div className="font-bold text-white">{opt.label}</div>
+                            </button>
+                          ))}
+                        </div>
+                        <div className="p-4 bg-[#070913] rounded-2xl border border-white/10 text-xs text-slate-300 flex items-center justify-between">
+                          <span>Evaluated Investor Profile:</span>
+                          <span className="font-bold text-cyan-400 bg-cyan-500/20 px-3 py-1 rounded-lg border border-cyan-500/30">{calculatedRiskProfile}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {questStep === 4 && (
+                      <div className="space-y-6">
+                        <div>
+                          <h2 className="text-2xl sm:text-3xl font-black text-white">How much would you like to invest monthly?</h2>
+                          <p className="text-slate-400 text-sm mt-1">Enter your planned Systematic Investment Plan (SIP) recurring amount in INR.</p>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-cyan-400 uppercase">Monthly SIP Amount (₹)</label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 font-black text-xl">₹</span>
+                            <input type="number" value={userAnswers.monthlyAmount} onChange={(e) => setUserAnswers(prev => ({ ...prev, monthlyAmount: Number(e.target.value) }))} className="w-full pl-12 pr-4 py-4 bg-[#070913] border border-white/10 rounded-2xl text-xl font-bold text-white focus:outline-none focus:border-cyan-500 shadow-inner" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {questStep === 5 && (
+                      <div className="space-y-6">
+                        <div>
+                          <h2 className="text-2xl sm:text-3xl font-black text-white">What annual return would you ideally like to achieve?</h2>
+                          <p className="text-slate-400 text-sm mt-1">Set your target compound growth rate expectation.</p>
+                        </div>
+                        <div className="space-y-4 pt-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-slate-300">Target Expectation:</span>
+                            <div className="flex items-center gap-1">
+                              <input type="number" min="3" max="25" value={userAnswers.expectedReturn} onChange={(e) => setUserAnswers(prev => ({ ...prev, expectedReturn: Number(e.target.value) }))} className="w-20 p-2 text-center bg-[#070913] border border-white/10 rounded-xl font-bold text-cyan-400 text-lg focus:outline-none focus:border-cyan-500" />
+                              <span className="font-bold text-white">%</span>
+                            </div>
+                          </div>
+                          <input type="range" min="3" max="25" step="0.5" value={userAnswers.expectedReturn} onChange={(e) => setUserAnswers(prev => ({ ...prev, expectedReturn: Number(e.target.value) }))} className="w-full accent-cyan-500 cursor-pointer h-2 bg-white/10 rounded-lg" />
+                        </div>
+                      </div>
+                    )}
+
+                    {questStep === 6 && (
+                      <div className="space-y-6">
+                        <div>
+                          <h2 className="text-2xl sm:text-3xl font-black text-white">When do you expect to need this money?</h2>
+                          <p className="text-slate-400 text-sm mt-1">Your investment horizon helps determine asset allocation.</p>
+                        </div>
+                        <div className="space-y-3">
+                          {[
+                            { id: 'short', label: 'Short term: Less than 3 years', desc: 'Focus on liquid & debt funds.' },
+                            { id: 'medium', label: 'Medium term: 3–7 years', desc: 'Balanced hybrid & flexi-cap funds.' },
+                            { id: 'long', label: 'Long term: More than 7 years', desc: 'High equity compounding for wealth creation.' }
+                          ].map(opt => (
+                            <button key={opt.id} onClick={() => setUserAnswers(prev => ({ ...prev, horizon: opt.id }))} className={`w-full p-4 rounded-2xl border transition-all text-left ${userAnswers.horizon === opt.id ? 'border-cyan-500 bg-cyan-500/10 ring-1 ring-cyan-500 shadow-lg' : 'border-white/10 bg-[#070913] hover:bg-[#131b33]'}`}>
+                              <div className="font-bold text-white">{opt.label}</div>
+                              <div className="text-xs text-slate-400 mt-0.5">{opt.desc}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-6 border-t border-white/10">
+                      {questStep > 1 ? (
+                        <button onClick={() => setQuestStep(prev => prev - 1)} className="px-6 py-3 rounded-xl border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/5 transition-colors">Back</button>
+                      ) : <div />}
+                      {questStep < 6 ? (
+                        <button onClick={() => setQuestStep(prev => prev + 1)} className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-md transition-colors">Continue</button>
+                      ) : (
+                        <button onClick={() => setCurrentView('recommendations')} className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 hover:opacity-95 text-white font-black text-sm shadow-xl transition-all">Discover My Funds</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* RECOMMENDATIONS VIEW */}
+              {currentView === 'recommendations' && (
+                <div className="space-y-8">
+                  <div className="bg-[#0D1224]/90 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-bold px-3 py-1 rounded-lg">
+                        <span>Assessed Profile: {calculatedRiskProfile}</span>
+                      </div>
+                      <h1 className="text-3xl font-black text-white">Your Top Mutual Fund Matches ({Math.min(displayCount, recommendedFunds.length)} of {recommendedFunds.length})</h1>
+                      <p className="text-slate-400 text-sm">Ranked by our algorithmic suitability engine based on your risk profile, {userAnswers.horizon}-term horizon, and target {userAnswers.expectedReturn}% return.</p>
+                    </div>
+                    <button onClick={handleStartQuestionnaire} className="px-5 py-3 bg-[#070913] hover:bg-[#131b33] border border-white/10 text-slate-200 font-semibold text-sm rounded-xl transition-colors shadow-lg">Retake Quiz</button>
+                  </div>
+
+                  <div className="bg-[#0D1224]/90 backdrop-blur-xl rounded-3xl border border-white/10 shadow-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse min-w-[950px]">
+                        <thead>
+                          <tr className="bg-[#070913] border-b border-white/10 text-xs font-bold uppercase text-slate-400 tracking-wider">
+                            <th className="py-4 px-6">Rank & Fund Name</th>
+                            <th className="py-4 px-4">Match %</th>
+                            <th className="py-4 px-4">Category</th>
+                            <th className="py-4 px-4">Risk</th>
+                            <th className="py-4 px-4">5-Yr CAGR</th>
+                            <th className="py-4 px-4">Exp. Ratio</th>
+                            <th className="py-4 px-4">Min SIP</th>
+                            <th className="py-4 px-4">NAV (Live)</th>
+                            <th className="py-4 px-6 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 text-sm">
+                          {recommendedFunds.slice(0, displayCount).map((fund, index) => (
+                            <tr key={fund.id} className="hover:bg-white/[0.03] transition-colors">
+                              <td className="py-5 px-6">
+                                <div className="flex items-center gap-3">
+                                  <span className="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold text-xs flex items-center justify-center shrink-0">#{index + 1}</span>
+                                  <div>
+                                    <div className="font-bold text-white hover:text-cyan-400 cursor-pointer" onClick={() => handleViewDetails(fund.id)}>{fund.name}</div>
+                                    <div className="text-xs text-slate-400 mt-0.5">{fund.amc}</div>
+                                    <div className="text-[11px] text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded mt-1.5 inline-block">{fund.recommendationReason}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-5 px-4 font-mono font-black text-cyan-400">{fund.matchPercentage}%</td>
+                              <td className="py-5 px-4 text-xs font-medium text-slate-300">{fund.category}</td>
+                              <td className="py-5 px-4">
+                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-md ${fund.riskLevel === 'High' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : fund.riskLevel === 'Moderate' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>{fund.riskLevel}</span>
+                              </td>
+                              <td className="py-5 px-4 font-mono font-bold text-emerald-400">{fund.cagr5}%</td>
+                              <td className="py-5 px-4 font-mono text-slate-300">{fund.expenseRatio}%</td>
+                              <td className="py-5 px-4 font-mono text-slate-300">₹{fund.minSip}</td>
+                              <td className="py-5 px-4 font-mono font-bold text-white">₹{fund.nav}</td>
+                              <td className="py-5 px-6 text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <button onClick={() => toggleCompare(fund.id)} className={`p-2.5 rounded-xl text-xs font-semibold transition-all ${compareList.includes(fund.id) ? 'bg-cyan-500 text-slate-950 font-bold shadow-lg' : 'bg-[#070913] hover:bg-[#131b33] text-slate-300 border border-white/10'}`}>
+                                    {compareList.includes(fund.id) ? '✓' : '+'}
+                                  </button>
+                                  <button onClick={() => handleViewDetails(fund.id)} className="px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-90 text-white font-bold text-xs rounded-xl transition-all shadow-md">Details</button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {displayCount < recommendedFunds.length && (
+                    <div className="text-center pt-2">
+                      <button onClick={() => setDisplayCount(prev => Math.min(prev + 10, recommendedFunds.length))} className="inline-flex items-center gap-2 bg-[#0D1224] hover:bg-[#131b33] border border-white/15 text-white font-extrabold px-8 py-4 rounded-2xl shadow-2xl transition-all">
+                        <span>Load 10 More Matching Funds ({recommendedFunds.length - displayCount} remaining)</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* COMPARE VIEW */}
+              {currentView === 'compare' && (
+                <div className="space-y-8">
+                  <div className="bg-[#0D1224]/90 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h1 className="text-3xl font-black text-white">Compare Your Mutual Fund</h1>
+                      <p className="text-slate-400 text-sm mt-1">Side-by-side quantitative performance analysis for {compareFundsData.length} selected funds.</p>
+                    </div>
+                    <button onClick={() => setCurrentView('explore')} className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-90 text-white text-sm font-bold rounded-xl shadow-md">+ Add More Funds</button>
+                  </div>
+
+                  {compareFundsData.length === 0 ? (
+                    <div className="bg-[#0D1224] p-12 rounded-3xl text-center space-y-4 border border-white/10">
+                      <p className="text-slate-400">No funds selected for comparison.</p>
+                      <button onClick={() => setCurrentView('explore')} className="px-6 py-3 bg-cyan-500 text-slate-950 rounded-xl font-bold text-sm">Explore Funds</button>
+                    </div>
+                  ) : (
+                    <div className="bg-[#0D1224]/90 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[700px]">
+                          <thead>
+                            <tr className="bg-[#070913] border-b border-white/10 text-xs font-bold uppercase text-slate-400">
+                              <th className="py-4 px-6 w-56">Parameter</th>
+                              {compareFundsData.map(f => (
+                                <th key={f.id} className="py-4 px-6">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                      <div className="font-bold text-white text-sm normal-case">{f.name}</div>
+                                      <div className="text-[11px] text-slate-400 font-normal">{f.amc}</div>
+                                    </div>
+                                    <button onClick={() => toggleCompare(f.id)} className="text-slate-500 hover:text-rose-400 p-1">✕</button>
+                                  </div>
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5 text-sm">
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">Category</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 text-slate-200">{f.category}</td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">Risk Classification</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6"><span className="bg-white/5 text-slate-300 text-xs font-semibold px-2.5 py-1 rounded-md border border-white/10">{f.riskLevel}</span></td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">1-Year Return</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 font-mono font-semibold text-emerald-400">{f.cagr1}%</td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">3-Year CAGR</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 font-mono font-semibold text-emerald-400">{f.cagr3}%</td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">5-Year CAGR</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 font-mono font-black text-cyan-400 text-base">{f.cagr5}%</td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">Expense Ratio</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 font-mono text-slate-200">{f.expenseRatio}%</td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">Exit Load</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 text-xs text-slate-400">{f.exitLoad}</td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">Minimum SIP</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 font-mono text-slate-200">₹{f.minSip}</td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">Portfolio P/E</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 font-mono text-slate-200">{f.peRatio}</td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">Equity Allocation</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 font-mono text-slate-200">{f.equityAlloc}%</td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">Debt Allocation</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 font-mono text-slate-200">{f.debtAlloc}%</td>))}
+                            </tr>
+                            <tr>
+                              <td className="py-4 px-6 font-semibold text-slate-400 bg-[#070913]/50">Benchmark</td>
+                              {compareFundsData.map(f => (<td key={f.id} className="py-4 px-6 text-xs text-slate-300">{f.benchmark}</td>))}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* DETAIL VIEW */}
+              {currentView === 'detail' && (
+                <div className="space-y-8">
+                  <div className="bg-[#0D1224]/90 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <span className="text-xs font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-3 py-1 rounded-full uppercase tracking-wider">{activeFundDetail.category}</span>
+                        <h1 className="text-3xl font-black text-white mt-2">{activeFundDetail.name}</h1>
+                        <p className="text-slate-400 text-sm">{activeFundDetail.amc} • Managed by {activeFundDetail.manager} • Inception: {activeFundDetail.inception}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => toggleCompare(activeFundDetail.id)} className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md ${compareList.includes(activeFundDetail.id) ? 'bg-cyan-500 text-slate-950' : 'bg-[#070913] hover:bg-[#131b33] text-slate-200 border border-white/10'}`}>
+                          {compareList.includes(activeFundDetail.id) ? 'Added to Compare' : '+ Compare'}
+                        </button>
+                        <button onClick={() => setCurrentView('explore')} className="px-4 py-2.5 bg-[#070913] hover:bg-[#131b33] text-slate-300 text-sm font-semibold rounded-xl border border-white/10">Back to List</button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-white/10">
+                      <div className="p-4 bg-[#070913] rounded-2xl border border-white/10">
+                        <div className="text-xs text-slate-400">Current NAV (Live)</div>
+                        <div className="font-mono font-black text-white text-xl mt-1">₹{activeFundDetail.nav}</div>
+                      </div>
+                      <div className="p-4 bg-[#070913] rounded-2xl border border-white/10">
+                        <div className="text-xs text-slate-400">5-Year CAGR</div>
+                        <div className="font-mono font-black text-cyan-400 text-xl mt-1">{activeFundDetail.cagr5}%</div>
+                      </div>
+                      <div className="p-4 bg-[#070913] rounded-2xl border border-white/10">
+                        <div className="text-xs text-slate-400">Expense Ratio</div>
+                        <div className="font-mono font-black text-slate-200 text-xl mt-1">{activeFundDetail.expenseRatio}%</div>
+                      </div>
+                      <div className="p-4 bg-[#070913] rounded-2xl border border-white/10">
+                        <div className="text-xs text-slate-400">Risk Profile</div>
+                        <div className="font-bold text-amber-400 text-lg mt-1">{activeFundDetail.riskLevel}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* INTERACTIVE GRAPH CONTAINER */}
+                  <div className="bg-[#0D1224]/90 backdrop-blur-xl p-8 sm:p-10 rounded-3xl border border-white/10 shadow-xl space-y-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                          <span>📈</span>
+                          <span>NAV Historical Trajectory & Growth Chart</span>
+                        </h3>
+                        <p className="text-slate-400 text-sm mt-0.5">Historical unit pricing progression from inception to present date.</p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex bg-[#070913] p-1 rounded-xl border border-white/10 text-xs font-bold">
+                          {['1Y', '3Y', '5Y', 'ALL'].map((tf) => (
+                            <button key={tf} onClick={() => setGraphTimeframe(tf)} className={`px-3 py-1.5 rounded-lg transition-all ${graphTimeframe === tf ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}>{tf}</button>
+                          ))}
+                        </div>
+                        <div className="bg-[#070913] px-4 py-1.5 rounded-xl border border-cyan-500/30 flex items-center gap-3">
+                          <div className="text-right">
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{activeHoverData ? activeHoverData.date : 'Hover Date'}</div>
+                            <div className="font-mono font-black text-cyan-400 text-sm">{activeHoverData ? `₹${activeHoverData.nav}` : `Live: ₹${activeFundDetail.nav}`}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="w-full h-96 bg-[#070913] rounded-2xl border border-white/10 p-6 flex flex-col justify-between relative overflow-hidden shadow-2xl">
+                      <div className="flex justify-between items-center text-xs text-slate-400 font-mono border-b border-white/10 pb-3 z-10">
+                        <span className="text-slate-400">Start Date to Today (Live)</span>
+                        <span className="text-emerald-400 font-bold">Latest NAV: ₹{activeFundDetail.nav}</span>
+                      </div>
+                      
+                      <div className="absolute inset-x-6 inset-y-16 flex items-center">
+                        <svg className="w-full h-64 overflow-visible" viewBox="0 0 800 240" preserveAspectRatio="none">
+                          <defs>
+                            <linearGradient id="glowAreaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.5" />
+                              <stop offset="50%" stopColor="#6366f1" stopOpacity="0.15" />
+                              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
+                            </linearGradient>
+                            <filter id="neonGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
+                              <feGaussianBlur stdDeviation="3" result="blur" />
+                              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                          </defs>
+
+                          {(() => {
+                            const allSeries = activeFundDetail.historicalSeries || [{ date: activeFundDetail.inception, nav: 10 }, { date: 'Today', nav: activeFundDetail.nav }];
+                            let count = allSeries.length;
+                            if (graphTimeframe === '1Y') count = 2;
+                            else if (graphTimeframe === '3Y') count = 4;
+                            else if (graphTimeframe === '5Y') count = 6;
+                            
+                            const series = allSeries.slice(Math.max(allSeries.length - count, 0));
+                            const navs = series.map(d => d.nav);
+                            const min = Math.min(...navs) * 0.95;
+                            const max = Math.max(...navs) * 1.05;
+                            const range = max - min || 1;
+
+                            const points = series.map((val, idx) => {
+                              const x = (idx / (series.length - 1)) * 800;
+                              const y = 220 - ((val.nav - min) / range) * 200;
+                              return { x, y, data: val };
+                            });
+
+                            const pathD = points.reduce((acc, pt, i, a) => {
+                              if (i === 0) return `M ${pt.x},${pt.y}`;
+                              const prev = a[i - 1];
+                              const cx = (prev.x + pt.x) / 2;
+                              return `${acc} C ${cx},${prev.y} ${cx},${pt.y} ${pt.x},${pt.y}`;
+                            }, '');
+
+                            const areaD = `${pathD} L 800,240 L 0,240 Z`;
+
+                            return (
+                              <>
+                                <line x1="0" y1="40" x2="800" y2="40" stroke="rgba(255,255,255,0.06)" strokeDasharray="6 6" />
+                                <line x1="0" y1="120" x2="800" y2="120" stroke="rgba(255,255,255,0.06)" strokeDasharray="6 6" />
+                                <line x1="0" y1="200" x2="800" y2="200" stroke="rgba(255,255,255,0.06)" strokeDasharray="6 6" />
+                                <path d={areaD} fill="url(#glowAreaGradient)" />
+                                <path d={pathD} fill="none" stroke="#06b6d4" strokeWidth="4" strokeLinecap="round" filter="url(#neonGlowFilter)" />
+                                {points.map((pt, idx) => (
+                                  <g key={idx} className="cursor-pointer group" onMouseEnter={() => setActiveHoverData(pt.data)} onMouseLeave={() => setActiveHoverData(null)}>
+                                    <circle cx={pt.x} cy={pt.y} r="5" className="fill-cyan-300 stroke-[#070913] stroke-2 group-hover:scale-150 group-hover:fill-fuchsia-400 transition-all" />
+                                  </g>
+                                ))}
+                              </>
+                            );
+                          })()}
+                        </svg>
+                      </div>
+
+                      <div className="flex justify-between items-center text-[11px] text-slate-400 font-mono pt-3 border-t border-white/10 z-10">
+                        {(() => {
+                          const allSeries = activeFundDetail.historicalSeries || [{ date: activeFundDetail.inception, nav: 10 }, { date: 'Today', nav: activeFundDetail.nav }];
+                          let count = allSeries.length;
+                          if (graphTimeframe === '1Y') count = 2;
+                          else if (graphTimeframe === '3Y') count = 4;
+                          else if (graphTimeframe === '5Y') count = 6;
+                          const series = allSeries.slice(Math.max(allSeries.length - count, 0));
+                          return series.map((pt, i) => (
+                            <span key={i} className={`${i === 0 || i === series.length - 1 ? 'font-bold text-cyan-300' : 'hidden md:inline-block text-slate-500'}`}>{pt.date}</span>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PORTFOLIO & METRICS */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-[#0D1224]/90 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl space-y-6">
+                      <h3 className="text-xl font-bold text-white">Portfolio Asset Allocation</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs font-semibold text-slate-400">
+                          <span>Equity: {activeFundDetail.equityAlloc}%</span>
+                          <span>Debt: {activeFundDetail.debtAlloc}%</span>
+                          <span>Cash: {activeFundDetail.cashAlloc}%</span>
+                        </div>
+                        <div className="w-full h-3 bg-[#070913] rounded-full overflow-hidden flex border border-white/10">
+                          <div style={{ width: `${activeFundDetail.equityAlloc}%` }} className="bg-cyan-400"></div>
+                          <div style={{ width: `${activeFundDetail.debtAlloc}%` }} className="bg-indigo-500"></div>
+                          <div style={{ width: `${activeFundDetail.cashAlloc}%` }} className="bg-slate-600"></div>
+                        </div>
+                      </div>
+                      <div className="space-y-3 pt-2">
+                        <h4 className="text-sm font-bold text-white">Top Holdings</h4>
+                        <div className="space-y-2">
+                          {activeFundDetail.topHoldings.map((h, i) => (
+                            <div key={i} className="flex justify-between text-sm py-2 border-b border-white/5">
+                              <span className="text-slate-300 font-medium">{h.name}</span>
+                              <span className="font-mono font-bold text-white">{h.weight}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#0D1224]/90 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl space-y-6">
+                      <h3 className="text-xl font-bold text-white">Key Risk Metrics & Explanations</h3>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="p-4 bg-[#070913] rounded-2xl border border-white/10">
+                          <div className="text-xs text-slate-400">Sharpe Ratio</div>
+                          <div className="font-mono font-bold text-lg text-white mt-0.5">{activeFundDetail.sharpeRatio}</div>
+                          <div className="text-[11px] text-cyan-300 mt-1">{TERM_EXPLANATIONS.sharpeRatio}</div>
+                        </div>
+                        <div className="p-4 bg-[#070913] rounded-2xl border border-white/10">
+                          <div className="text-xs text-slate-400">Alpha</div>
+                          <div className="font-mono font-bold text-lg text-emerald-400 mt-0.5">+{activeFundDetail.alpha}%</div>
+                          <div className="text-[11px] text-cyan-300 mt-1">{TERM_EXPLANATIONS.alpha}</div>
+                        </div>
+                        <div className="p-4 bg-[#070913] rounded-2xl border border-white/10">
+                          <div className="text-xs text-slate-400">Beta</div>
+                          <div className="font-mono font-bold text-lg text-white mt-0.5">{activeFundDetail.beta}</div>
+                          <div className="text-[11px] text-cyan-300 mt-1">{TERM_EXPLANATIONS.beta}</div>
+                        </div>
+                        <div className="p-4 bg-[#070913] rounded-2xl border border-white/10">
+                          <div className="text-xs text-slate-400">Standard Deviation</div>
+                          <div className="font-mono font-bold text-lg text-white mt-0.5">{activeFundDetail.stdDev}%</div>
+                          <div className="text-[11px] text-cyan-300 mt-1">{TERM_EXPLANATIONS.stdDev}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* EXPLORE VIEW */}
+              {currentView === 'explore' && (
+                <div className="space-y-8">
+                  <div className="bg-[#0D1224]/90 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl space-y-6">
+                    <div>
+                      <h1 className="text-3xl font-black text-white">Explore Indian Mutual Funds</h1>
+                      <p className="text-slate-400 text-sm mt-1">Browse and filter verified SEBI registered direct mutual funds with live NAV updates.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <input type="text" placeholder="Search by fund or AMC..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full px-4 py-3 bg-[#070913] border border-white/10 rounded-2xl text-sm text-white focus:outline-none focus:border-cyan-500" />
+                      <select value={selectedRiskFilter} onChange={(e) => setSelectedRiskFilter(e.target.value)} className="px-4 py-3 bg-[#070913] border border-white/10 rounded-2xl text-sm font-semibold text-slate-300">
+                        <option value="All">All Risk Levels</option>
+                        <option value="Low">Low Risk</option>
+                        <option value="Moderate">Moderate Risk</option>
+                        <option value="High">High Risk</option>
+                      </select>
+                      <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-4 py-3 bg-[#070913] border border-white/10 rounded-2xl text-sm font-semibold text-slate-300">
+                        <option value="cagr5">Sort by 5-Yr Return</option>
+                        <option value="expenseRatio">Sort by Expense Ratio</option>
+                        <option value="minSip">Sort by Minimum SIP</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0D1224]/90 backdrop-blur-xl rounded-3xl border border-white/10 shadow-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse min-w-[850px]">
+                        <thead>
+                          <tr className="bg-[#070913] border-b border-white/10 text-xs font-bold uppercase text-slate-400">
+                            <th className="py-4 px-6">Fund Name</th>
+                            <th className="py-4 px-4">Category</th>
+                            <th className="py-4 px-4">Risk</th>
+                            <th className="py-4 px-4">5-Yr CAGR</th>
+                            <th className="py-4 px-4">Exp. Ratio</th>
+                            <th className="py-4 px-4">NAV (Live)</th>
+                            <th className="py-4 px-6 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 text-sm">
+                          {filteredExploreFunds.map(f => (
+                            <tr key={f.id} className="hover:bg-white/[0.03]">
+                              <td className="py-4 px-6 font-bold text-white">{f.name}</td>
+                              <td className="py-4 px-4 text-xs text-slate-300">{f.category}</td>
+                              <td className="py-4 px-4"><span className="text-xs font-semibold px-2.5 py-1 rounded bg-[#070913] border border-white/10 text-slate-300">{f.riskLevel}</span></td>
+                              <td className="py-4 px-4 font-mono font-bold text-emerald-400">{f.cagr5}%</td>
+                              <td className="py-4 px-4 font-mono text-slate-300">{f.expenseRatio}%</td>
+                              <td className="py-4 px-4 font-mono font-bold text-white">₹{f.nav}</td>
+                              <td className="py-4 px-6 text-right">
+                                <button onClick={() => handleViewDetails(f.id)} className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-90 text-white font-bold rounded-xl text-xs shadow-md">Details</button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ABOUT VIEW */}
+              {currentView === 'about' && (
+                <div className="max-w-3xl mx-auto bg-[#0D1224]/90 backdrop-blur-xl p-8 sm:p-12 rounded-3xl border border-white/10 shadow-2xl space-y-6">
+                  <h1 className="text-3xl font-black text-white">About Compare Your Mutual Fund</h1>
+                  <p className="text-slate-300 leading-relaxed">Compare Your Mutual Fund is an institutional-grade research platform dedicated to Indian capital markets. We empower investors with transparent analytics, real-time NAV updates, vector-rendered historical performance graphs, and rigorous portfolio comparisons.</p>
+                </div>
+              )}
+
+            </main>
+
+            {/* FOOTER */}
+            <footer className="bg-[#070913] border-t border-white/10 py-8 text-xs text-slate-500 z-10">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+                <div className="p-4 bg-[#0D1224] rounded-2xl border border-white/10 leading-relaxed text-slate-400">
+                  <strong className="text-cyan-400">Financial Disclaimer:</strong> Mutual fund investments are subject to market risks. Read all scheme related documents carefully. Past performance does not guarantee future returns.
+                </div>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                  <div>© 2026 Compare Your Mutual Fund Platform. All rights reserved.</div>
+                </div>
+              </div>
+            </footer>
+
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+  </body>
+</html>
